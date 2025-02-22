@@ -36,6 +36,7 @@ public class FileMonitorService {
 	private void processFile(File file) {
 		try {
 			String fileName = file.getName();
+			 String fileNameWithoutExtension = removeFileExtension(fileName);
 			String[] parts = fileName.split("_");
 			if (parts.length != 4) {
 				loggerUtil.logError("Invalid file format: " + fileName);
@@ -49,8 +50,11 @@ public class FileMonitorService {
 			LocalDateTime startTime = LocalDateTime.now();
 
 			Path targetPath = Path.of(INPUT_DIR, fileName);
-			Files.move(file.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-			Files.createFile(Path.of(INPUT_DIR, fileName + ".trig"));
+			Files.copy(file.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+			
+			
+			Files.createFile(Path.of(INPUT_DIR, fileNameWithoutExtension + ".trig"));
+
 
 			LocalDateTime endTime = LocalDateTime.now();
 			Metadata metadata = new Metadata(fileId, accountName, empId, countryCode, deptId, startTime.toString(),
@@ -61,6 +65,11 @@ public class FileMonitorService {
 		} catch (IOException e) {
 			loggerUtil.logError("Error processing file: " + file.getName());
 		}
+	}
+	
+	private String removeFileExtension(String fileName) {
+	    int lastDotIndex = fileName.lastIndexOf(".");
+	    return (lastDotIndex == -1) ? fileName : fileName.substring(0, lastDotIndex);
 	}
 
 }

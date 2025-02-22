@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Employees>
+    <Employee>
+        <AccountName>john_doe</AccountName>
+        <EmpId>12345</EmpId>
+        <CountryCode>US</CountryCode>
+        <DeptId>IT01</DeptId>
+    </Employee>
+    <Employee>
+        <AccountName>jane_smith</AccountName>
+        <EmpId>67890</EmpId>
+        <CountryCode>UK</CountryCode>
+        <DeptId>HR02</DeptId>
+    </Employee>
+    <Employee>
+        <AccountName>alex_wilson</AccountName>
+        <EmpId>11223</EmpId>
+        <CountryCode>IN</CountryCode>
+        <DeptId>FIN03</DeptId>
+    </Employee>
+</Employees>

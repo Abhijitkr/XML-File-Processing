@@ -1,12 +1,3 @@
-AccountName|john_doe|
-EmpId|12345|
-CountryCode|US|
-DeptId|IT01|
-AccountName|jane_smith|
-EmpId|67890|
-CountryCode|UK|
-DeptId|HR02|
-AccountName|alex_wilson|
-EmpId|11223|
-CountryCode|IN|
-DeptId|FIN03|
+john_doe|12345|US|IT01
+jane_smith|67890|UK|HR02
+alex_wilson|11223|IN|FIN03

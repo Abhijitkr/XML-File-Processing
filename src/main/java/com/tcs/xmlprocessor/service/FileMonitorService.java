@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,16 +20,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.tcs.xmlprocessor.model.Metadata;
-
 import com.tcs.xmlprocessor.repository.MetadataRepository;
 import com.tcs.xmlprocessor.util.LoggerUtil;
+
 
 @Service
 public class FileMonitorService {
 	private static final String SOURCE_DIR = "E:/Karat Preparation/xmlprocessor/source";
 	private static final String INPUT_DIR = "E:/Karat Preparation/xmlprocessor/input";
 	private static final String OUTPUT_DIR = "E:/Karat Preparation/xmlprocessor/output";
-
+	LocalDateTime startTime;
+	
 	private final MetadataRepository metadataRepository;
 	private final LoggerUtil loggerUtil;
 
@@ -41,12 +44,12 @@ public class FileMonitorService {
 		File[] files = folder.listFiles((dir, name) -> name.endsWith(".xml"));
 		if (files != null) {
 			for (File file : files) {
-				processFile(file);
+				copyFile(file);
 			}
 		}
 	}
 
-	private void processFile(File file) {
+	private void copyFile(File file) {
 		try {
 			String fileName = file.getName();
 			String fileNameWithoutExtension = removeFileExtension(fileName);
@@ -55,12 +58,12 @@ public class FileMonitorService {
 				loggerUtil.logError("Invalid file format: " + fileName);
 				return;
 			}
-			String accountName = parts[0];
-			String empId = parts[1];
-			String countryCode = parts[2];
-			String deptId = parts[3];
-			String fileId = UUID.randomUUID().toString();
-			LocalDateTime startTime = LocalDateTime.now();
+//			String accountName = parts[0];
+//			String empId = parts[1];
+//			String countryCode = parts[2];
+//			String deptId = parts[3];
+//			String fileId = UUID.randomUUID().toString();
+//			LocalDateTime startTime = LocalDateTime.now();
 
 			// Copy XML file from source directory to input directory
 			Path sourcePath = file.toPath();
@@ -72,10 +75,10 @@ public class FileMonitorService {
 
 			checkTriggerFiles();
 
-			LocalDateTime endTime = LocalDateTime.now();
-			Metadata metadata = new Metadata(fileId, accountName, empId, countryCode, deptId, startTime.toString(),
-					endTime.toString());
-			metadataRepository.save(metadata);
+//			LocalDateTime endTime = LocalDateTime.now();
+//			Metadata metadata = new Metadata(fileId, accountName, empId, countryCode, deptId, startTime.toString(),
+//					endTime.toString());
+//			metadataRepository.save(metadata);
 
 			loggerUtil.logInfo("Copied and processed file: " + fileName);
 		} catch (IOException e) {
@@ -84,6 +87,7 @@ public class FileMonitorService {
 		}
 	}
 
+	
 	@Scheduled(fixedRate = 10000)
 	public void checkTriggerFiles() {
 		File inputFolder = new File(INPUT_DIR);
@@ -97,6 +101,9 @@ public class FileMonitorService {
 
 	private void processTriggerFile(File triggerFile) {
 		try {
+			
+			startTime = LocalDateTime.now();
+			
 			String fileNameWithoutExtension = removeFileExtension(triggerFile.getName());
 			File xmlFile = new File(INPUT_DIR, fileNameWithoutExtension + ".xml");
 			if (!xmlFile.exists()) {
@@ -122,26 +129,83 @@ public class FileMonitorService {
 		}
 	}
 
-	private String convertXmlToPipeSeparated(String xmlContent) {
-		Pattern pattern = Pattern.compile("<([^/][^>]*)>(.*?)</\\1>");
-		Matcher matcher = pattern.matcher(xmlContent);
-		StringBuilder result = new StringBuilder();
-
-		while (matcher.find()) {
+//	
+//	private String convertXmlToPipeSeparated(String xmlContent) {
+//	    Pattern pattern = Pattern.compile("<([^/][^>]*)>(.*?)</\\1>");
+//	    Matcher matcher = pattern.matcher(xmlContent);
+//	    StringBuilder result = new StringBuilder();
+//	    int count = 0;
+//
+//	    while (matcher.find()) {
 //	        result.append(matcher.group(2).trim()).append("|");
-			result.append(matcher.group(1).trim()).append("|").append(matcher.group(2).trim()).append("|\n");
-		}
+//	        count++;
+//
+//	        // Each Employee has 4 fields, so insert a newline after every 4 values
+//	        if (count % 4 == 0) {
+//	            result.setLength(result.length() - 1); // Remove trailing '|'
+//	            result.append("\n");
+//	        }
+//	    }
+//
+//	    return result.toString().trim();
+//	}
+//	
 
-		return result.length() > 0 ? result.substring(0, result.length() - 1) : "";
+	
+	private String convertXmlToPipeSeparated(String xmlContent) {
+	    Pattern employeePattern = Pattern.compile("<Employee>(.*?)</Employee>", Pattern.DOTALL);
+	    Pattern fieldPattern = Pattern.compile("<([^/][^>]*)>(.*?)</\\1>");
+
+	    Matcher employeeMatcher = employeePattern.matcher(xmlContent);
+	    StringBuilder result = new StringBuilder();
+
+	    while (employeeMatcher.find()) {
+	        String employeeData = employeeMatcher.group(1);
+	        Matcher fieldMatcher = fieldPattern.matcher(employeeData);
+	        StringBuilder employeeLine = new StringBuilder();
+
+	        while (fieldMatcher.find()) {
+	            employeeLine.append(fieldMatcher.group(2).trim()).append("|");
+	        }
+
+	        // Remove trailing '|' and add a new line
+	        if (employeeLine.length() > 0) {
+	            employeeLine.setLength(employeeLine.length() - 1);
+	        }
+
+	        result.append(employeeLine).append("\n");
+	    }
+
+	    return result.toString().trim();
 	}
 
+
 	private void zipFile(File file, String zipFilePath) throws IOException {
+		String fileName = file.getName();
+		String fileNameWithoutExtension = removeFileExtension(fileName);
+		String[] parts = fileNameWithoutExtension.split("_");
+		if (parts.length != 4) {
+			loggerUtil.logError("Invalid file format: " + fileName);
+			return;
+		}
+		
+		String accountName = parts[0];
+		String empId = parts[1];
+		String countryCode = parts[2];
+		String deptId = parts[3];
+		String fileId = UUID.randomUUID().toString();
+		
+		
 		try (FileOutputStream fos = new FileOutputStream(zipFilePath); ZipOutputStream zos = new ZipOutputStream(fos)) {
 			ZipEntry zipEntry = new ZipEntry(file.getName());
 			zos.putNextEntry(zipEntry);
 			Files.copy(file.toPath(), zos);
 			zos.closeEntry();
 			loggerUtil.logInfo("Zipped file: " + zipFilePath);
+			LocalDateTime endTime = LocalDateTime.now();
+			Metadata metadata = new Metadata(fileId, accountName, empId, countryCode, deptId, startTime.toString(),
+					endTime.toString());
+			metadataRepository.save(metadata);
 		}
 	}
 

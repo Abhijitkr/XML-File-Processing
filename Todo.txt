@@ -1,0 +1,5 @@
+0. Convert dat file according to the instructions
+1. Store in DB
+2. save logs in file
+3. Separate methods according to UML
+4. Add annotations and autowired

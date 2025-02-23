@@ -1,1 +1,2 @@
 1. Issue while creating trigger file, .xml extension was also included in the trigger file.
+2. Issue faced while processing the xml file to dat file (pipe seperated)

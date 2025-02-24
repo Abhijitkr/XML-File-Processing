@@ -1,13 +1,17 @@
 package com.tcs.xmlprocessor.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
 public class Metadata {
 	
 	@Id
-	private String fileId;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private int fileId;
+	
 	private String accountName;
 	private String empId;
 	private String countryCode;
@@ -15,10 +19,10 @@ public class Metadata {
 	private String startTime;
 	private String endTime;
 	
-	public Metadata(String fileId, String accountName, String empId, String countryCode, String deptId,
+	public Metadata(String accountName, String empId, String countryCode, String deptId,
 			String startTime, String endTime) {
 		super();
-		this.fileId = fileId;
+		
 		this.accountName = accountName;
 		this.empId = empId;
 		this.countryCode = countryCode;
@@ -32,13 +36,13 @@ public class Metadata {
 		// TODO Auto-generated constructor stub
 	}
 
-	public String getFileId() {
-		return fileId;
-	}
-
-	public void setFileId(String fileId) {
-		this.fileId = fileId;
-	}
+//	public String getFileId() {
+//		return fileId;
+//	}
+//
+//	public void setFileId(String fileId) {
+//		this.fileId = fileId;
+//	}
 
 	public String getAccountName() {
 		return accountName;
